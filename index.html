@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>반응속도 테스트</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            user-select: none;
+        }
+        #screen {
+            width: 80%;
+            max-width: 600px;
+            height: 400px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.19);
+            transition: background-color 0.1s ease;
+        }
+        /* 대기 상태: 파란색 */
+        .waiting {
+            background-color: #2b8a3e;
+        }
+        /* 준비 상태: 빨간색 */
+        .ready {
+            background-color: #e03131;
+        }
+        /* 클릭 상태: 초록색 */
+        .now {
+            background-color: #1c7ed6;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>ㅈㄴ 느리네</h1>
+    <div id="screen" class="waiting">클릭해서 시작하세요.</div>
+    <div id="result"></div>
+
+    <script>
+        const $screen = document.querySelector('#screen');
+        const $result = document.querySelector('#result');
+
+        let startTime;
+        let endTime;
+        let timeoutId;
+        let records = [];
+
+        $screen.addEventListener('click', () => {
+            // 1. 대기 상태 (클릭하면 준비 상태로 변경)
+            if ($screen.classList.contains('waiting')) {
+                $screen.classList.remove('waiting');
+                $screen.classList.add('ready');
+                $screen.textContent = '파란색이 되면 클릭하세요!';
+                
+                // 2초 ~ 5초 사이의 랜덤한 시간 후 초록색으로 변경
+                timeoutId = setTimeout(() => {
+                    startTime = new Date();
+                    $screen.classList.remove('ready');
+                    $screen.classList.add('now');
+                    $screen.textContent = '지금 클릭하세요!!!';
+                }, Math.floor(Math.random() * 3000) + 2000);
+
+            // 2. 준비 상태 (너무 빨리 클릭한 경우 성급한 클릭 처리)
+            } else if ($screen.classList.contains('ready')) {
+                clearTimeout(timeoutId);
+                $screen.classList.remove('ready');
+                $screen.classList.add('waiting');
+                $screen.textContent = '너무 빨랐습니다! 다시 시작하려면 클릭하세요.';
+                
+            // 3. 클릭 상태 (반응 속도 측정 및 결과 표시)
+            } else if ($screen.classList.contains('now')) {
+                endTime = new Date();
+                const currentRecord = endTime - startTime; // 밀리초(ms) 단위 계산
+                records.push(currentRecord);
+                
+                // 평균값 계산
+                const average = records.reduce((a, c) => a + c) / records.length;
+                
+                $result.innerHTML = `이번 속도: <b>${currentRecord}ms</b><br>평균 속도: <b>${Math.round(average)}ms</b>`;
+                
+                $screen.classList.remove('now');
+                $screen.classList.add('waiting');
+                $screen.textContent = '클릭해서 다시 시작하세요.';
+            }
+        });
+    </script>
+</body>
+</html>
